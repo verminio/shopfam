@@ -20,6 +20,7 @@ function addItem() {
 function newItem() {
     const itemId = document.createElement('input');
     itemId.type = 'hidden';
+    itemId.classList.add('id');
     const itemInput = document.createElement('input');
     itemInput.type = 'text';
     itemInput.addEventListener('focusout', finishEditItem);
@@ -60,9 +61,13 @@ function finishEditItem(e) {
             name: article.querySelector('.item > input').value,
             quantity: article.querySelector('.quantity > input').value
         }
-        console.log(item);
-
-        httpPut("/api/items", item);
+        idInput = article.querySelector('.id');
+        
+        if (idInput.value) {
+            item.id = Number(idInput.value);
+        }
+        
+        httpPut('/api/items', item, (r) => { idInput.value = JSON.parse(r.target.responseText).id; });
     }
 }
 
@@ -70,11 +75,12 @@ function generateId() {
     return Math.random().toString(36).slice(2);
 }
 
-function httpPut(path, body) {
+function httpPut(path, body, callback) {
     var r = new XMLHttpRequest();
     r.open("PUT", path, true);
     r.onreadystatechange = function () {
         if (r.readyState != 4 || r.status != 200 || r.status != 201) return;
     };
+    r.onload = callback;
     r.send(JSON.stringify(body));
 }

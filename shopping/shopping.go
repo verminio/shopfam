@@ -19,6 +19,7 @@ type items []item
 
 type Repository interface {
 	SaveItem(i item) (*ItemId, error)
+	UpdateItem(id *ItemId, i item) error
 	ListItems() (items, error)
 }
 
@@ -41,6 +42,16 @@ func (r *sqliteRepository) SaveItem(i item) (*ItemId, error) {
 	id := ItemId(last)
 
 	return &id, nil
+}
+
+func (r *sqliteRepository) UpdateItem(id *ItemId, i item) error {
+	_, err := r.db.Exec("UPDATE shopping_list SET item = ?, quantity = ? WHERE id = ?", i.name, i.quantity, *id)
+
+	if err != nil {
+		return fmt.Errorf("failed to update item %d: %w", i.id, err)
+	}
+
+	return nil
 }
 
 func (r *sqliteRepository) ListItems() (items, error) {

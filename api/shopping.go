@@ -9,37 +9,38 @@ import (
 	"github.com/verminio/shopfam/shopping"
 )
 
-func CreateItem(repository shopping.Repository) http.HandlerFunc {
+func UpsertItem(service *shopping.ItemService) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		type createItem struct {
-			Name      string `json:"name"`
-			Quantity  string `json:"quantity"`
-			DateAdded int64  `json:"dateAdded"`
+		type request struct {
+			Id        *shopping.ItemId `json:"id,omitempty"`
+			Name      string           `json:"name"`
+			Quantity  string           `json:"quantity"`
+			DateAdded int64            `json:"dateAdded"`
 		}
 
-		created := &createItem{}
+		requestData := &request{}
 
 		dec := json.NewDecoder(req.Body)
-		if err := dec.Decode(created); err != nil {
+		if err := dec.Decode(requestData); err != nil {
 			http.Error(w, "Invalid Request Body", http.StatusBadRequest)
 			return
 		}
 
-		item := shopping.New(created.Name, created.Quantity, time.UnixMilli(created.DateAdded))
+		item := shopping.New(requestData.Name, requestData.Quantity, time.UnixMilli(requestData.DateAdded))
 
-		id, err := repository.SaveItem(item)
+		id, err := service.Upsert(requestData.Id, item)
 		if err != nil {
 			log.Printf("Unexpected error: %s", err)
 			http.Error(w, "Unexpected error", http.StatusInternalServerError)
 			return
 		}
 
-		type createdItem struct {
+		type response struct {
 			Id shopping.ItemId `json:"id"`
 		}
 		w.Header().Set("Content-Type", "application/json")
 		enc := json.NewEncoder(w)
-		if err := enc.Encode(createdItem{Id: *id}); err != nil {
+		if err := enc.Encode(response{Id: *id}); err != nil {
 			log.Printf("Unexpected error: %s", err)
 			http.Error(w, "Unexpected error", http.StatusInternalServerError)
 			return

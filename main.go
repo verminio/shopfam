@@ -49,9 +49,12 @@ func main() {
 	}
 
 	log.Println("Starting HTTP Server...")
+
+	itemService := shopping.NewItemService(shopping.NewRepository(d))
+
 	router := server.Router()
 	router.RegisterFS("", "html", fs.FS(content))
-	router.HandleFunc(http.MethodPut, "/api/items", api.CreateItem(shopping.NewRepository(d)))
+	router.HandleFunc(http.MethodPut, "/api/items", api.UpsertItem(itemService))
 
 	err = http.ListenAndServe(listenAddr, router)
 
