@@ -71,7 +71,7 @@ func ListItems(service *shopping.ItemService) http.HandlerFunc {
 				Id:        i.Id,
 				Name:      i.Name,
 				Quantity:  i.Quantity,
-				DateAdded: i.DateAdded.Unix(),
+				DateAdded: i.DateAdded.UnixMilli(),
 			}
 		}
 

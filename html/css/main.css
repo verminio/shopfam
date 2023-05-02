@@ -349,6 +349,7 @@ body > main > #shopping-list {
   margin: auto;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   background: var(--item-bg-color);
   border-bottom: 1px solid var(--separator-color);
 }
@@ -358,27 +359,32 @@ body > main > #shopping-list {
 }
 
 .shopping-item label {
-  margin: 10px;
-}
-
-.shopping-item .item {
-  flex: 80%;
-}
-
-.shopping-item .quantity {
-  flex: 20%;
-}
-
-.shopping-item {
-  padding: 12.5px 25px 12.5px 25px;
+  margin-left: 16px;
+  margin-right: 16px;
 }
 
 .shopping-item input {
   width: 100%;
 }
 
-h1, h2, h3 {
-  font-family: 'Oswald', sans-serif;
+.shopping-item .item {
+  flex: 2;
+}
+
+.shopping-item .quantity {
+  flex: 1;
+}
+
+.shopping-item .dateAdded {
+  margin-left: 16px;
+}
+
+.shopping-item {
+  padding: 12.5px 25px 12.5px 25px;
+}
+
+.flex-break {
+  flex-basis: 100%;
 }
 
 /*

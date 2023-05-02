@@ -11,7 +11,7 @@ window.addEventListener('load', function() {
     const shoppingList = document.getElementById('shopping-list');
     httpGet('/api/items', (r) => { 
         JSON.parse(r.target.responseText).forEach((i) => {
-            const item = newItem(i.id, i.name, i.quantity);
+            const item = newItem(i.id, i.name, i.quantity, new Date(i.dateAdded));
             shoppingList.insertBefore(item, shoppingList.lastElementChild);
         });
     })
@@ -27,24 +27,24 @@ function addItem() {
     item.querySelector('input[type=text]').focus();
 }
 
-function newItem(id, name, quantity) {
+function newItem(id, name, quantity, dateAdded) {
     const itemId = document.createElement('input');
     itemId.type = 'hidden';
     itemId.classList.add('id');
     if (id) {
         itemId.value = id;
     }
-    const itemInput = document.createElement('input');
-    itemInput.type = 'text';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
     if (name) {
-        itemInput.value = name;
+        nameInput.value = name;
     }
-    itemInput.addEventListener('focusout', finishEditItem);
-    itemInput.addEventListener('focusin', startEditItem);
-    const itemQuantity = document.createElement('input');
-    itemQuantity.type = 'text';
+    nameInput.addEventListener('focusout', finishEditItem);
+    nameInput.addEventListener('focusin', startEditItem);
+    const quantityInput = document.createElement('input');
+    quantityInput.type = 'text';
     if (quantity) {
-        itemQuantity.value = quantity;
+        quantityInput.value = quantity;
     }
     const item = document.createElement('article');
     item.classList.add('shopping-item');
@@ -54,8 +54,19 @@ function newItem(id, name, quantity) {
         }
     });
     item.appendChild(itemId);
-    item.appendChild(label('Item', 'item', itemInput));
-    item.appendChild(label('Quantity', 'quantity', itemQuantity));
+    item.appendChild(label('Item', 'item', nameInput));
+    item.appendChild(label('Quantity', 'quantity', quantityInput));
+
+    if (dateAdded) {
+        const br = document.createElement('div');
+        br.classList.add('flex-break');
+        item.appendChild(br);
+        const date = document.createElement('span');
+        date.classList.add('dateAdded');
+        date.innerHTML = `Added on: <time datetime="${moment(dateAdded).format()}">${moment(dateAdded).format('YYYY-MM-DD HH:mm')}</time>`;
+        item.appendChild(date);
+    }
+
     return item;
 }
 
