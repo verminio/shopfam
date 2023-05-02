@@ -4,7 +4,7 @@ type ItemService struct {
 	repository Repository
 }
 
-func (s ItemService) Upsert(id *ItemId, i item) (res *ItemId, err error) {
+func (s *ItemService) Upsert(id *ItemId, i item) (res *ItemId, err error) {
 	if id != nil {
 		res = id
 		err = s.repository.UpdateItem(id, i)
@@ -13,6 +13,10 @@ func (s ItemService) Upsert(id *ItemId, i item) (res *ItemId, err error) {
 	}
 
 	return
+}
+
+func (s *ItemService) List() (items, error) {
+	return s.repository.ListItems()
 }
 
 func NewItemService(r Repository) *ItemService {

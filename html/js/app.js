@@ -7,26 +7,45 @@ if ("serviceWorker" in navigator) {
     })
 }
 
+window.addEventListener('load', function() {
+    const shoppingList = document.getElementById('shopping-list');
+    httpGet('/api/items', (r) => { 
+        JSON.parse(r.target.responseText).forEach((i) => {
+            const item = newItem(i.id, i.name, i.quantity);
+            shoppingList.insertBefore(item, shoppingList.lastElementChild);
+        });
+    })
+});
+
 document.getElementById('add-item')
     .addEventListener('click', addItem);
 
 function addItem() {
-    var shoppingList = document.getElementById('shopping-list');
+    const shoppingList = document.getElementById('shopping-list');
     const item = newItem();
     shoppingList.insertBefore(item, shoppingList.lastElementChild);
     item.querySelector('input[type=text]').focus();
 }
 
-function newItem() {
+function newItem(id, name, quantity) {
     const itemId = document.createElement('input');
     itemId.type = 'hidden';
     itemId.classList.add('id');
+    if (id) {
+        itemId.value = id;
+    }
     const itemInput = document.createElement('input');
     itemInput.type = 'text';
+    if (name) {
+        itemInput.value = name;
+    }
     itemInput.addEventListener('focusout', finishEditItem);
     itemInput.addEventListener('focusin', startEditItem);
     const itemQuantity = document.createElement('input');
     itemQuantity.type = 'text';
+    if (quantity) {
+        itemQuantity.value = quantity;
+    }
     const item = document.createElement('article');
     item.classList.add('shopping-item');
     item.addEventListener('click', function(e) {
@@ -54,12 +73,13 @@ function startEditItem() {
 
 function finishEditItem(e) {
     document.getElementById('add-item').disabled = true;
-    if(e.target.value && Array.from(document.querySelectorAll(".shopping-item > .item > input")).pop().value) {
+    if(e.target.value && Array.from(document.querySelectorAll('.shopping-item > .item > input')).pop().value) {
         document.getElementById('add-item').disabled = false;
         const article = e.target.closest('article');
         const item = {
             name: article.querySelector('.item > input').value,
-            quantity: article.querySelector('.quantity > input').value
+            quantity: article.querySelector('.quantity > input').value,
+            dateAdded: new Date().getTime()
         }
         idInput = article.querySelector('.id');
         
@@ -75,9 +95,16 @@ function generateId() {
     return Math.random().toString(36).slice(2);
 }
 
+function httpGet(path, callback) {
+    const r = new XMLHttpRequest();
+    r.open('GET', path, true);
+    r.onload = callback;
+    r.send();
+}
+
 function httpPut(path, body, callback) {
-    var r = new XMLHttpRequest();
-    r.open("PUT", path, true);
+    const r = new XMLHttpRequest();
+    r.open('PUT', path, true);
     r.onreadystatechange = function () {
         if (r.readyState != 4 || r.status != 200 || r.status != 201) return;
     };

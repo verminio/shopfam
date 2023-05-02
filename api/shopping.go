@@ -47,3 +47,40 @@ func UpsertItem(service *shopping.ItemService) http.HandlerFunc {
 		}
 	})
 }
+
+func ListItems(service *shopping.ItemService) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		items, err := service.List()
+		if err != nil {
+			log.Printf("Unexpected error: %s", err)
+			http.Error(w, "Unexpected error", http.StatusInternalServerError)
+			return
+		}
+
+		type item struct {
+			Id        shopping.ItemId `json:"id"`
+			Name      string          `json:"name"`
+			Quantity  string          `json:"quantity"`
+			DateAdded int64           `json:"dateAdded"`
+		}
+
+		rsp := make([]item, len(items))
+
+		for cur, i := range items {
+			rsp[cur] = item{
+				Id:        i.Id,
+				Name:      i.Name,
+				Quantity:  i.Quantity,
+				DateAdded: i.DateAdded.Unix(),
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(rsp); err != nil {
+			log.Printf("Unexpected error: %s", err)
+			http.Error(w, "Unexpected error", http.StatusInternalServerError)
+			return
+		}
+	})
+}

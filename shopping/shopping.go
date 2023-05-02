@@ -9,10 +9,10 @@ import (
 type ItemId int
 
 type item struct {
-	id        ItemId
-	name      string
-	quantity  string
-	dateAdded time.Time
+	Id        ItemId
+	Name      string
+	Quantity  string
+	DateAdded time.Time
 }
 
 type items []item
@@ -28,7 +28,7 @@ type sqliteRepository struct {
 }
 
 func (r *sqliteRepository) SaveItem(i item) (*ItemId, error) {
-	res, err := r.db.Exec("INSERT INTO shopping_list (item, quantity, date_added) VALUES (?, ?, ?)", i.name, i.quantity, i.dateAdded)
+	res, err := r.db.Exec("INSERT INTO shopping_list (item, quantity, date_added) VALUES (?, ?, ?)", i.Name, i.Quantity, i.DateAdded)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to insert record: %w", err)
@@ -45,10 +45,10 @@ func (r *sqliteRepository) SaveItem(i item) (*ItemId, error) {
 }
 
 func (r *sqliteRepository) UpdateItem(id *ItemId, i item) error {
-	_, err := r.db.Exec("UPDATE shopping_list SET item = ?, quantity = ? WHERE id = ?", i.name, i.quantity, *id)
+	_, err := r.db.Exec("UPDATE shopping_list SET item = ?, quantity = ? WHERE id = ?", i.Name, i.Quantity, *id)
 
 	if err != nil {
-		return fmt.Errorf("failed to update item %d: %w", i.id, err)
+		return fmt.Errorf("failed to update item %d: %w", i.Id, err)
 	}
 
 	return nil
@@ -66,7 +66,7 @@ func (r *sqliteRepository) ListItems() (items, error) {
 
 	for rows.Next() {
 		i := item{}
-		err = rows.Scan(&i.id, &i.name, &i.quantity, &i.dateAdded)
+		err = rows.Scan(&i.Id, &i.Name, &i.Quantity, &i.DateAdded)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize results: %w", err)
@@ -86,8 +86,8 @@ func NewRepository(db *sql.DB) Repository {
 
 func New(name string, quantity string, dateAdded time.Time) item {
 	return item{
-		name:      name,
-		quantity:  quantity,
-		dateAdded: dateAdded,
+		Name:      name,
+		Quantity:  quantity,
+		DateAdded: dateAdded,
 	}
 }

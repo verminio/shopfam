@@ -55,6 +55,7 @@ func main() {
 	router := server.Router()
 	router.RegisterFS("", "html", fs.FS(content))
 	router.HandleFunc(http.MethodPut, "/api/items", api.UpsertItem(itemService))
+	router.HandleFunc(http.MethodGet, "/api/items", api.ListItems(itemService))
 
 	err = http.ListenAndServe(listenAddr, router)
 
