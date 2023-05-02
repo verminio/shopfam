@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS shopping_list (
+    id VARCHAR(36) PRIMARY KEY,
+    item VARCHAR(255),
+    quantity VARCHAR(255),
+    date_added DATETIME DEFAULT CURRENT_TIMESTAMP
+)

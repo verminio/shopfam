@@ -1,0 +1,7 @@
+{
+    "name": "Shopping",
+    "short_name": "Shopping",
+    "start_url": "index.html",
+    "display": "standalone",
+    "orientation": "portrait_primary"
+}
