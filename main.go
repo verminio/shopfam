@@ -11,9 +11,11 @@ import (
 	"github.com/verminio/shopfam/api"
 	"github.com/verminio/shopfam/server"
 	"github.com/verminio/shopfam/shopping"
+
+	"github.com/go-chi/chi/v5"
 )
 
-//go:embed html/*
+//go:embed html
 var content embed.FS
 
 //go:embed db/migrations/*.sql
@@ -50,12 +52,15 @@ func main() {
 
 	log.Println("Starting HTTP Server...")
 
+	files := fs.FS(content)
+	html, _ := fs.Sub(files, "html")
+	fileServer := http.FileServer(http.FS(html))
 	itemService := shopping.NewItemService(shopping.NewRepository(d))
 
-	router := server.Router()
-	router.RegisterFS("", "html", fs.FS(content))
-	router.HandleFunc(http.MethodPut, "/api/items", api.UpsertItem(itemService))
-	router.HandleFunc(http.MethodGet, "/api/items", api.ListItems(itemService))
+	router := chi.NewRouter()
+	router.Put("/api/items", api.UpsertItem(itemService))
+	router.Get("/api/items", api.ListItems(itemService))
+	router.Handle("/*", fileServer)
 
 	err = http.ListenAndServe(listenAddr, router)
 
