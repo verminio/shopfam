@@ -20,14 +20,13 @@ function addItem() {
 function newItem() {
     const itemId = document.createElement('input');
     itemId.type = 'hidden';
-    itemId.value = generateId();
     const itemInput = document.createElement('input');
     itemInput.type = 'text';
     itemInput.addEventListener('focusout', finishEditItem);
     itemInput.addEventListener('focusin', startEditItem);
     const itemQuantity = document.createElement('input');
     itemQuantity.type = 'text';
-    const item = document.createElement('div');
+    const item = document.createElement('article');
     item.classList.add('shopping-item');
     item.addEventListener('click', function(e) {
         if (e.target.tagName !== 'INPUT') {
@@ -56,9 +55,26 @@ function finishEditItem(e) {
     document.getElementById('add-item').disabled = true;
     if(e.target.value && Array.from(document.querySelectorAll(".shopping-item > .item > input")).pop().value) {
         document.getElementById('add-item').disabled = false;
+        const article = e.target.closest('article');
+        const item = {
+            name: article.querySelector('.item > input').value,
+            quantity: article.querySelector('.quantity > input').value
+        }
+        console.log(item);
+
+        httpPut("/api/items", item);
     }
 }
 
 function generateId() {
     return Math.random().toString(36).slice(2);
+}
+
+function httpPut(path, body) {
+    var r = new XMLHttpRequest();
+    r.open("PUT", path, true);
+    r.onreadystatechange = function () {
+        if (r.readyState != 4 || r.status != 200 || r.status != 201) return;
+    };
+    r.send(JSON.stringify(body));
 }

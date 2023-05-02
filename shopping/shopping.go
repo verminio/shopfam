@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-type itemId string
+type ItemId int
 
 type item struct {
-	id        itemId
+	id        ItemId
 	name      string
 	quantity  string
 	dateAdded time.Time
@@ -18,7 +18,7 @@ type item struct {
 type items []item
 
 type Repository interface {
-	SaveItem(i item) error
+	SaveItem(i item) (*ItemId, error)
 	ListItems() (items, error)
 }
 
@@ -26,14 +26,21 @@ type sqliteRepository struct {
 	db *sql.DB
 }
 
-func (r *sqliteRepository) SaveItem(i item) error {
-	_, err := r.db.Exec("INSERT INTO shopping_list (id, item, quantity, date_added) VALUES (?, ?, ?, ?)", i.id, i.name, i.quantity, i.dateAdded)
+func (r *sqliteRepository) SaveItem(i item) (*ItemId, error) {
+	res, err := r.db.Exec("INSERT INTO shopping_list (item, quantity, date_added) VALUES (?, ?, ?)", i.name, i.quantity, i.dateAdded)
 
 	if err != nil {
-		return fmt.Errorf("failed to insert record: %w", err)
+		return nil, fmt.Errorf("failed to insert record: %w", err)
 	}
 
-	return nil
+	last, err := res.LastInsertId()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get last inserted id: %w", err)
+	}
+	id := ItemId(last)
+
+	return &id, nil
 }
 
 func (r *sqliteRepository) ListItems() (items, error) {
@@ -66,9 +73,8 @@ func NewRepository(db *sql.DB) Repository {
 	}
 }
 
-func New(id string, name string, quantity string, dateAdded time.Time) item {
+func New(name string, quantity string, dateAdded time.Time) item {
 	return item{
-		id:        itemId(id),
 		name:      name,
 		quantity:  quantity,
 		dateAdded: dateAdded,

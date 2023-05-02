@@ -51,7 +51,7 @@ func main() {
 	log.Println("Starting HTTP Server...")
 	router := server.Router()
 	router.RegisterFS("", "html", fs.FS(content))
-	router.HandleFunc(http.MethodPost, "/api/items", api.CreateItem(shopping.NewRepository(d)))
+	router.HandleFunc(http.MethodPut, "/api/items", api.CreateItem(shopping.NewRepository(d)))
 
 	err = http.ListenAndServe(listenAddr, router)
 
