@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"path"
 	"strconv"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/verminio/shopfam/shopping"
 )
 
@@ -89,7 +89,7 @@ func ListItems(service *shopping.ItemService) http.HandlerFunc {
 
 func DeleteItem(service *shopping.ItemService) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		param := path.Base(req.URL.Path)
+		param := chi.URLParam(req, "itemId")
 		id, err := strconv.Atoi(param)
 		if err != nil {
 			http.Error(w, "Bad request", http.StatusBadRequest)

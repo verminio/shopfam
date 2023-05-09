@@ -49,7 +49,7 @@ function newItem(id, name, quantity, dateAdded) {
     const item = document.createElement('article');
     item.classList.add('shopping-item');
     item.addEventListener('click', function(e) {
-        if (e.target.tagName !== 'INPUT') {
+        if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
             e.target.querySelector('.item input').focus();
         }
     });
@@ -57,17 +57,56 @@ function newItem(id, name, quantity, dateAdded) {
     item.appendChild(label('Item', 'item', nameInput));
     item.appendChild(label('Quantity', 'quantity', quantityInput));
 
+    if (id) {
+        appendDeleteButton(item, id);
+    } else {
+        const spacer = document.createElement('div')
+        spacer.classList.add('action-spacer');
+        item.appendChild(spacer);
+    }
+
     if (dateAdded) {
-        const br = document.createElement('div');
-        br.classList.add('flex-break');
-        item.appendChild(br);
-        const date = document.createElement('span');
-        date.classList.add('dateAdded');
-        date.innerHTML = `Added on: <time datetime="${moment(dateAdded).format()}">${moment(dateAdded).format('YYYY-MM-DD HH:mm')}</time>`;
-        item.appendChild(date);
+        appendDate(item, dateAdded);
     }
 
     return item;
+}
+
+function appendDeleteButton(article, itemId) {
+    if (article.querySelector('.delete-item')) {
+        return;
+    }
+
+    const spacer = article.querySelector('.action-spacer');
+    if (spacer) {
+        spacer.remove();
+    }
+    const deleteBtn = document.createElement('button');
+    deleteBtn.addEventListener('click', () => deleteItem(itemId), false);
+    deleteBtn.innerHTML = 'X';
+    deleteBtn.classList.add('item-action', 'delete-item');
+    article.appendChild(deleteBtn);
+}
+
+function appendDate(article, dateAdded) {
+    if (article.querySelector('.dateAdded')) {
+        return;
+    }
+
+    const br = document.createElement('div');
+    br.classList.add('flex-break');
+    article.appendChild(br);
+    const date = document.createElement('span');
+    date.classList.add('dateAdded');
+    date.innerHTML = `Added on: <time datetime="${moment(dateAdded).format()}">${moment(dateAdded).format('YYYY-MM-DD HH:mm')}</time>`;
+    article.appendChild(date);
+}
+
+function deleteItem(id) {
+    httpDelete(`/api/items/${id}`, () => {
+        const item = document.querySelector(`input[type=hidden][value="${id}"]`);
+        item.closest('article').remove();
+    });
 }
 
 function label(text, classes, child) {
@@ -98,7 +137,11 @@ function finishEditItem(e) {
             item.id = Number(idInput.value);
         }
         
-        httpPut('/api/items', item, (r) => { idInput.value = JSON.parse(r.target.responseText).id; });
+        httpPut('/api/items', item, (r) => { 
+            idInput.value = JSON.parse(r.target.responseText).id;
+            appendDeleteButton(article, idInput.value);
+            appendDate(article, item.dateAdded);
+        });
     }
 }
 
@@ -121,4 +164,11 @@ function httpPut(path, body, callback) {
     };
     r.onload = callback;
     r.send(JSON.stringify(body));
+}
+
+function httpDelete(path, callback) {
+    const r = new XMLHttpRequest();
+    r.open('DELETE', path, true);
+    r.onload = callback;
+    r.send();
 }

@@ -60,6 +60,7 @@ func main() {
 	router := chi.NewRouter()
 	router.Put("/api/items", api.UpsertItem(itemService))
 	router.Get("/api/items", api.ListItems(itemService))
+	router.Delete("/api/items/{itemId}", api.DeleteItem(itemService))
 	router.Handle("/*", fileServer)
 
 	err = http.ListenAndServe(listenAddr, router)
