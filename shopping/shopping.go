@@ -19,8 +19,9 @@ type items []item
 
 type Repository interface {
 	SaveItem(i item) (*ItemId, error)
-	UpdateItem(id *ItemId, i item) error
+	UpdateItem(id ItemId, i item) error
 	ListItems() (items, error)
+	DeleteItem(i ItemId) error
 }
 
 type sqliteRepository struct {
@@ -44,8 +45,8 @@ func (r *sqliteRepository) SaveItem(i item) (*ItemId, error) {
 	return &id, nil
 }
 
-func (r *sqliteRepository) UpdateItem(id *ItemId, i item) error {
-	_, err := r.db.Exec("UPDATE shopping_list SET item = ?, quantity = ? WHERE id = ?", i.Name, i.Quantity, *id)
+func (r *sqliteRepository) UpdateItem(id ItemId, i item) error {
+	_, err := r.db.Exec("UPDATE shopping_list SET item = ?, quantity = ? WHERE id = ?", i.Name, i.Quantity, id)
 
 	if err != nil {
 		return fmt.Errorf("failed to update item %d: %w", i.Id, err)
@@ -76,6 +77,16 @@ func (r *sqliteRepository) ListItems() (items, error) {
 	}
 
 	return res, nil
+}
+
+func (r *sqliteRepository) DeleteItem(id ItemId) error {
+	_, err := r.db.Exec("DELETE FROM shopping_list WHERE id = ?", id)
+
+	if err != nil {
+		return fmt.Errorf("failed to delete %d: %w", id, err)
+	}
+
+	return nil
 }
 
 func NewRepository(db *sql.DB) Repository {

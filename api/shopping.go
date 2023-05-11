@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/verminio/shopfam/shopping"
 )
 
@@ -82,5 +84,24 @@ func ListItems(service *shopping.ItemService) http.HandlerFunc {
 			http.Error(w, "Unexpected error", http.StatusInternalServerError)
 			return
 		}
+	})
+}
+
+func DeleteItem(service *shopping.ItemService) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		param := chi.URLParam(req, "itemId")
+		id, err := strconv.Atoi(param)
+		if err != nil {
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+
+		if err = service.Delete(shopping.ItemId(id)); err != nil {
+			log.Printf("Unexpected error: %s", err)
+			http.Error(w, "Unexpected error", http.StatusInternalServerError)
+			return
+		}
+
+		http.Error(w, "", http.StatusNoContent)
 	})
 }
